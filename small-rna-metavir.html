@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>small RNA Metavir | Sequence-Independent Viral Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #FDFBF7;
+      --color-bg-alt: #F3EDE3;
+      --color-text: #1A1A1A;
+      --color-text-muted: #5C5C5C;
+      --color-accent: #2D6A4F;
+      --color-accent-light: #40916C;
+      --color-accent-warm: #B45309;
+      --color-highlight: #D4A373;
+      --color-border: #E5DFD3;
+      --color-dark: #0F1A14;
+      --font-display: 'Fraunces', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); line-height: 1.7; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(253, 251, 247, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--color-border); transition: all 0.3s ease; }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 500; color: var(--color-accent); text-decoration: none; letter-spacing: -0.02em; }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { font-size: 0.85rem; color: var(--color-text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--color-accent); }
+    .nav-github { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; background: var(--color-dark); color: var(--color-bg) !important; border-radius: 6px; font-size: 0.8rem !important; font-weight: 600 !important; transition: transform 0.2s, background 0.2s; }
+    .nav-github:hover { transform: translateY(-1px); background: var(--color-accent); }
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--color-text); margin: 5px 0; transition: 0.3s; }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 6rem 2rem 4rem; position: relative; background: radial-gradient(ellipse at 20% 80%, rgba(45,106,79,0.07) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(180,83,9,0.05) 0%, transparent 50%), var(--color-bg); }
+    .hero::before { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity: 0.03; pointer-events: none; }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 700; line-height: 1.08; margin-bottom: 1.5rem; animation: fadeInUp 0.8s ease-out 0.2s backwards; max-width: 900px; }
+    .hero h1 .accent { color: var(--color-accent); font-style: italic; font-weight: 400; }
+    .hero-subtitle { font-size: 1.2rem; color: var(--color-text-muted); max-width: 620px; margin-bottom: 3rem; animation: fadeInUp 0.8s ease-out 0.4s backwards; line-height: 1.8; }
+    .hero-stats { display: flex; gap: 3.5rem; flex-wrap: wrap; justify-content: center; animation: fadeInUp 0.8s ease-out 0.6s backwards; }
+    .stat { text-align: center; }
+    .stat-number { font-family: var(--font-display); font-size: 3.2rem; font-weight: 700; color: var(--color-accent); line-height: 1; }
+    .stat-label { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.5rem; }
+    .scroll-indicator { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; color: var(--color-text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; animation: bounce 2s infinite; }
+    .scroll-indicator svg { width: 20px; height: 20px; }
+
+    /* SECTIONS */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--color-accent); font-weight: 600; margin-bottom: 1rem; font-family: var(--font-mono); }
+    .section-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; margin-bottom: 1.5rem; line-height: 1.2; }
+
+    /* ABOUT */
+    .about { background: var(--color-bg-alt); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .about-content p { color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 1.05rem; }
+    .about-content strong { color: var(--color-text); font-weight: 600; }
+    .tool-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 12px; padding: 2rem; position: relative; overflow: hidden; }
+    .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--color-accent), var(--color-accent-warm)); }
+    .tool-name { font-family: var(--font-mono); font-size: 1rem; font-weight: 500; color: var(--color-accent); margin-bottom: 0.75rem; }
+    .tool-desc { font-size: 0.95rem; color: var(--color-text-muted); margin-bottom: 1.5rem; line-height: 1.7; }
+    .tool-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tool-tag { font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.7rem; background: rgba(45,106,79,0.08); color: var(--color-accent); border-radius: 4px; letter-spacing: 0.03em; }
+    .tool-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 600; color: var(--color-accent); text-decoration: none; transition: gap 0.2s; }
+    .tool-link:hover { gap: 0.7rem; }
+
+    /* PIPELINE */
+    .pipeline { background: var(--color-dark); color: var(--color-bg); padding: 6rem 2rem; }
+    .pipeline .section-label { color: var(--color-highlight); }
+    .pipeline-intro { color: rgba(255,255,255,0.5); max-width: 650px; margin-bottom: 3rem; }
+    .pipeline-flow { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; }
+
+    .pipe-stage { display: grid; grid-template-columns: 160px 60px 1fr; align-items: stretch; min-height: 100px; }
+    .pipe-label { display: flex; flex-direction: column; justify-content: center; padding-right: 1.5rem; text-align: right; }
+    .pipe-label-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--color-bg); line-height: 1.3; }
+    .pipe-label-sub { font-family: var(--font-mono); font-size: 0.6rem; color: rgba(255,255,255,0.25); margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .pipe-spine { display: flex; flex-direction: column; align-items: center; position: relative; }
+    .pipe-node { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--color-accent-light); background: var(--color-dark); z-index: 2; flex-shrink: 0; margin-top: 1.5rem; position: relative; }
+    .pipe-node::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent-light); transform: translate(-50%, -50%); }
+    .pipe-line { width: 2px; flex-grow: 1; background: linear-gradient(to bottom, var(--color-accent-light), rgba(64,145,108,0.15)); }
+    .pipe-node.active { border-color: var(--color-highlight); box-shadow: 0 0 12px rgba(212,163,115,0.3); }
+    .pipe-node.active::after { background: var(--color-highlight); }
+    .pipe-content { padding: 1rem 0 1rem 1.5rem; border-left: 1px solid rgba(255,255,255,0.03); }
+    .pipe-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1.25rem 1.5rem; transition: background 0.3s, border-color 0.3s; }
+    .pipe-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+    .pipe-card-items { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+    .pipe-item { font-family: var(--font-mono); font-size: 0.68rem; color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.04); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+    .pipe-card-desc { font-size: 0.88rem; color: rgba(255,255,255,0.55); line-height: 1.65; }
+
+    .pipe-fork { display: grid; grid-template-columns: 160px 60px 1fr; align-items: start; }
+    .pipe-fork-content { padding-left: 1.5rem; border-left: 1px solid rgba(255,255,255,0.03); }
+    .pipe-branches { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.25rem; }
+    .branch-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1.25rem; transition: background 0.3s, border-color 0.3s; }
+    .branch-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    .branch-card-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--color-bg); margin-bottom: 0.5rem; }
+    .branch-card-desc { font-size: 0.82rem; color: rgba(255,255,255,0.45); line-height: 1.6; }
+    .branch-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.58rem; padding: 0.2rem 0.5rem; border-radius: 3px; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .branch-tag.sequence { background: rgba(45,106,79,0.2); color: var(--color-accent-light); border: 1px solid rgba(45,106,79,0.3); }
+    .branch-tag.pattern { background: rgba(212,163,115,0.15); color: var(--color-highlight); border: 1px solid rgba(212,163,115,0.3); }
+
+    .pipe-output { display: grid; grid-template-columns: 160px 60px 1fr; align-items: start; }
+    .pipe-output-content { padding: 1rem 0 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.03); }
+    .pipe-result { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; background: rgba(45,106,79,0.12); border: 1px solid rgba(45,106,79,0.25); border-radius: 10px; }
+    .pipe-result-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--color-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pipe-result-text { font-size: 0.88rem; color: rgba(255,255,255,0.7); }
+    .pipe-result-text strong { color: var(--color-bg); font-weight: 600; }
+
+    /* STATS BANNER */
+    .stats-banner { background: linear-gradient(135deg, var(--color-accent) 0%, #1B4332 100%); color: white; text-align: center; padding: 4rem 2rem; }
+    .stats-banner h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 400; font-style: italic; max-width: 700px; margin: 0 auto 3rem; opacity: 0.95; line-height: 1.5; }
+    .banner-stats { display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap; }
+    .banner-stat { text-align: center; }
+    .banner-stat-number { font-family: var(--font-display); font-size: 3.5rem; font-weight: 700; display: block; line-height: 1; }
+    .banner-stat-label { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.5rem; display: block; }
+
+    /* DIAMOND TOOLS */
+    .diamond-section { background: var(--color-bg); }
+    .diamond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; margin-top: 2rem; }
+    .diamond-info p { color: var(--color-text-muted); font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.8; }
+    .diamond-steps { display: flex; flex-direction: column; }
+    .diamond-step { display: flex; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--color-border); }
+    .diamond-step:last-child { border-bottom: none; }
+    .diamond-step-num { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--color-border); line-height: 1; flex-shrink: 0; width: 2rem; text-align: center; padding-top: 0.15rem; }
+    .diamond-step-title { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; color: var(--color-text); margin-bottom: 0.3rem; }
+    .diamond-step-desc { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; }
+    .diamond-link-box { margin-top: 1.5rem; padding: 1.25rem; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; gap: 1rem; }
+    .diamond-link-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--color-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .diamond-link-text { flex-grow: 1; }
+    .diamond-link-title { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; color: var(--color-text); }
+    .diamond-link-sub { font-size: 0.78rem; color: var(--color-text-muted); }
+    .diamond-link-btn { font-size: 0.8rem; font-weight: 600; color: var(--color-accent); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; transition: gap 0.2s; }
+    .diamond-link-btn:hover { gap: 0.6rem; }
+    .diamond-code { background: var(--color-dark); border-radius: 10px; padding: 1.5rem; overflow-x: auto; }
+    .diamond-code-label { font-family: var(--font-mono); font-size: 0.65rem; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; display: block; }
+    .diamond-code pre { font-family: var(--font-mono); font-size: 0.78rem; color: rgba(255,255,255,0.7); line-height: 1.8; white-space: pre-wrap; word-break: break-all; }
+    .diamond-code .cmd { color: var(--color-accent-light); }
+    .diamond-code .flag { color: var(--color-highlight); }
+    .diamond-code .comment { color: rgba(255,255,255,0.25); font-style: italic; }
+
+    /* PUBLICATIONS */
+    .publications { background: var(--color-bg-alt); }
+    .pub-carousel-wrapper { position: relative; margin-top: 2rem; overflow: hidden; }
+    .pub-carousel { display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 1rem; scrollbar-width: none; }
+    .pub-carousel::-webkit-scrollbar { display: none; }
+    .pub-card { min-width: 340px; max-width: 340px; scroll-snap-align: start; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 12px; padding: 2rem; display: flex; flex-direction: column; transition: transform 0.3s, box-shadow 0.3s; }
+    .pub-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+    .pub-journal { font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-accent-warm); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; font-weight: 500; }
+    .pub-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; line-height: 1.4; margin-bottom: 1rem; color: var(--color-text); flex-grow: 1; }
+    .pub-authors { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 1rem; line-height: 1.5; }
+    .pub-authors .highlight { color: var(--color-accent); font-weight: 600; }
+    .pub-link { margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 600; color: var(--color-accent); text-decoration: none; transition: gap 0.2s; }
+    .pub-link:hover { gap: 0.6rem; }
+    .carousel-nav { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; }
+    .carousel-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--color-text); }
+    .carousel-btn:hover { background: var(--color-accent); color: white; border-color: var(--color-accent); }
+
+    /* GITHUB CTA */
+    .github-cta { background: var(--color-dark); color: var(--color-bg); text-align: center; padding: 5rem 2rem; position: relative; overflow: hidden; }
+    .github-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 50%, rgba(45,106,79,0.15) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(212,163,115,0.1) 0%, transparent 50%); }
+    .github-cta > * { position: relative; z-index: 1; }
+    .github-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; margin-bottom: 1rem; }
+    .github-cta p { font-size: 1.1rem; color: rgba(255,255,255,0.6); max-width: 550px; margin: 0 auto 2.5rem; }
+    .cta-button { display: inline-flex; align-items: center; gap: 0.6rem; padding: 1rem 2rem; background: white; color: var(--color-dark); font-family: var(--font-body); font-size: 1rem; font-weight: 700; border-radius: 8px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    .cta-button svg { width: 20px; height: 20px; }
+    .cta-meta { margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+    .cta-meta span { font-family: var(--font-mono); font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+    /* CONTACT */
+    .contact { background: var(--color-bg); }
+    .contact-intro { color: var(--color-text-muted); font-size: 1.05rem; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.8; }
+    .contact-links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .contact-link { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 10px; text-decoration: none; color: var(--color-text); transition: all 0.2s; }
+    .contact-link:hover { border-color: var(--color-accent); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+    .contact-link-icon { width: 42px; height: 42px; border-radius: 8px; background: var(--color-accent); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .contact-link-label { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .contact-link-value { font-weight: 600; font-size: 0.95rem; }
+
+    /* FOOTER */
+    footer { background: var(--color-dark); color: rgba(255,255,255,0.4); text-align: center; padding: 3rem 2rem; font-size: 0.85rem; }
+    .footer-logo { font-family: var(--font-mono); font-size: 1rem; color: var(--color-accent-light); margin-bottom: 0.75rem; }
+    .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; }
+    .footer-links a { color: rgba(255,255,255,0.3); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--color-accent-light); }
+
+    /* ANIMATIONS */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); } 40% { transform: translateX(-50%) translateY(-8px); } 60% { transform: translateX(-50%) translateY(-4px); } }
+    .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 0.75rem 1.5rem; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: block; }
+      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: var(--color-bg); padding: 1.5rem; border-bottom: 1px solid var(--color-border); gap: 1rem; }
+      .hero { padding: 8rem 1.5rem 4rem; }
+      .hero-stats { gap: 2rem; }
+      .stat-number { font-size: 2.5rem; }
+      section { padding: 4rem 1.5rem; }
+      .about-grid, .diamond-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .pipe-stage, .pipe-fork, .pipe-output { grid-template-columns: 1fr; }
+      .pipe-label { text-align: left; padding: 0 0 0.5rem 0; }
+      .pipe-spine { display: none; }
+      .pipe-content, .pipe-fork-content, .pipe-output-content { padding-left: 0; border-left: 3px solid rgba(255,255,255,0.06); padding-left: 1rem; margin-bottom: 1rem; }
+      .pipe-branches { grid-template-columns: 1fr; }
+      .pub-card { min-width: 290px; max-width: 290px; }
+      .banner-stats { gap: 2rem; }
+      .banner-stat-number { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-logo">small-rna-metavir</a>
+    <div class="nav-links" id="navLinks">
+      <a href="#about">About</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#tools">Tools</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+      <a href="https://github.com/rnai-bioinfo/small-rna-metavir" target="_blank" class="nav-github">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <button class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Decoding the <span class="accent">hidden virome</span> through small RNAs</h1>
+    <p class="hero-subtitle">A sequence-independent metagenomics approach that leverages host-derived small RNAs to discover, classify, and characterize viruses — even those invisible to traditional methods.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-number">10+</div><div class="stat-label">Viruses<br>characterized</div></div>
+      <div class="stat"><div class="stat-number">6</div><div class="stat-label">Novel species<br>discovered</div></div>
+      <div class="stat"><div class="stat-number">3</div><div class="stat-label">Insect vectors<br>profiled</div></div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Explore</span>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid fade-in">
+        <div class="about-content">
+          <span class="section-label">About the Research</span>
+          <h2 class="section-title">Turning the host immune response into a virus discovery engine</h2>
+          <p>When viruses infect insects, the host <strong>RNA interference (RNAi) pathway</strong> produces small RNAs (18–30 nt) that carry a unique signature for each virus — a molecular fingerprint shaped by genome structure, tissue tropism, and replication strategy.</p>
+          <p>Our approach exploits these virus-derived small RNAs to <strong>detect and characterize viruses without relying on sequence similarity</strong> to known references. This overcomes a critical limitation of traditional metagenomics: the inability to identify highly divergent viruses with no known relatives — the so-called "dark matter" of viral metagenomics.</p>
+          <p>The method has been validated across <strong>Drosophila, Aedes aegypti mosquitoes, and Lutzomyia sandflies</strong>, and preliminary results extend to plants and vertebrates.</p>
+        </div>
+        <div>
+          <div class="tool-card">
+            <div class="tool-name">$ small-rna-metavir</div>
+            <div class="tool-desc">An automated open-source pipeline that combines contig assembly, sequence similarity classification, and a <strong>Random Forest classifier</strong> trained on small RNA size profiles of 1,300+ curated sequences to identify viral contigs — including those invisible to BLAST or Diamond.</div>
+            <div class="tool-tags">
+              <span class="tool-tag">RNA-seq</span><span class="tool-tag">metagenomics</span><span class="tool-tag">small-RNA</span><span class="tool-tag">machine-learning</span><span class="tool-tag">Docker</span><span class="tool-tag">Python</span><span class="tool-tag">Perl</span>
+            </div>
+            <a href="https://github.com/rnai-bioinfo/small-rna-metavir" target="_blank" class="tool-link">View on GitHub <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pipeline -->
+  <section class="pipeline" id="pipeline">
+    <div class="container fade-in">
+      <span class="section-label">How it Works</span>
+      <h2 class="section-title" style="color: var(--color-bg);">From raw reads to viral discovery</h2>
+      <p class="pipeline-intro">The pipeline processes small RNA sequencing libraries through integrated stages — combining classical bioinformatics with machine learning to identify viruses that escape traditional detection.</p>
+
+      <div class="pipeline-flow">
+        <!-- Stage 1 -->
+        <div class="pipe-stage">
+          <div class="pipe-label"><div class="pipe-label-title">RNA Preparation</div><div class="pipe-label-sub">Input</div></div>
+          <div class="pipe-spine"><div class="pipe-node"></div><div class="pipe-line"></div></div>
+          <div class="pipe-content">
+            <div class="pipe-card">
+              <div class="pipe-card-desc">Total RNA extracted from insect samples. Small RNAs (18–30 nt) are size-selected on denaturing PAGE, while long RNAs undergo poly(A) enrichment and rRNA depletion.</div>
+              <div class="pipe-card-items"><span class="pipe-item">size selection 18–30 nt</span><span class="pipe-item">no sample manipulation</span><span class="pipe-item">Trizol extraction</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 2 -->
+        <div class="pipe-stage">
+          <div class="pipe-label"><div class="pipe-label-title">Pre-processing</div><div class="pipe-label-sub">Filtering</div></div>
+          <div class="pipe-spine"><div class="pipe-node"></div><div class="pipe-line"></div></div>
+          <div class="pipe-content">
+            <div class="pipe-card">
+              <div class="pipe-card-desc">Quality filtering, adaptor trimming, and sequential removal of host genome, bacterial, and transposable element sequences via Bowtie mapping.</div>
+              <div class="pipe-card-items"><span class="pipe-item">fastx-toolkit</span><span class="pipe-item">Bowtie</span><span class="pipe-item">phred ≥ 20</span><span class="pipe-item">host removal</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 3 -->
+        <div class="pipe-stage">
+          <div class="pipe-label"><div class="pipe-label-title">Contig Assembly</div><div class="pipe-label-sub">Assembly</div></div>
+          <div class="pipe-spine"><div class="pipe-node"></div><div class="pipe-line"></div></div>
+          <div class="pipe-content">
+            <div class="pipe-card">
+              <div class="pipe-card-desc">Parallel assembly using Velvet across 20–23 nt and 24–30 nt size ranges with optimized k-mer values. Results merged via CAP3 and deduplicated with BLASTClust.</div>
+              <div class="pipe-card-items"><span class="pipe-item">Velvet</span><span class="pipe-item">VelvetOptimiser</span><span class="pipe-item">CAP3</span><span class="pipe-item">BLASTClust</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 4: Fork -->
+        <div class="pipe-fork">
+          <div class="pipe-label"><div class="pipe-label-title">Characterization</div><div class="pipe-label-sub">Dual strategy</div></div>
+          <div class="pipe-spine"><div class="pipe-node active"></div><div class="pipe-line"></div></div>
+          <div class="pipe-fork-content">
+            <div class="pipe-branches">
+              <div class="branch-card">
+                <span class="branch-tag sequence">Sequence-based</span>
+                <div class="branch-card-title">Similarity Search</div>
+                <div class="branch-card-desc">BLAST and Diamond against NCBI nr/nt databases. Contigs classified as viral, non-viral, or unknown. InterProScan and HMMer identify conserved domains and ORFs.</div>
+              </div>
+              <div class="branch-card">
+                <span class="branch-tag pattern">Pattern-based</span>
+                <div class="branch-card-title">sRNA Profile Classification</div>
+                <div class="branch-card-desc">Small RNA size profiles are Z-score normalized and classified by a Random Forest model trained on 1,300+ sequences — identifying viral contigs with no known relatives.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Stage 5: Output -->
+        <div class="pipe-output">
+          <div class="pipe-label"><div class="pipe-label-title">Validation</div><div class="pipe-label-sub">Output</div></div>
+          <div class="pipe-spine"><div class="pipe-node"></div></div>
+          <div class="pipe-output-content">
+            <div class="pipe-result">
+              <div class="pipe-result-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="pipe-result-text">All contigs classified as <strong>viral, non-viral, unknown, or EVEs</strong> — validated by RT-PCR and Sanger sequencing.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Banner -->
+  <section class="stats-banner">
+    <h2>"The small RNA size profile is a unique signature for each virus — a molecular barcode shaped by host-pathogen interactions"</h2>
+    <div class="banner-stats">
+      <div class="banner-stat"><span class="banner-stat-number">1,300+</span><span class="banner-stat-label">Curated training sequences</span></div>
+      <div class="banner-stat"><span class="banner-stat-number">21 nt</span><span class="banner-stat-label">siRNA signature peak</span></div>
+      <div class="banner-stat"><span class="banner-stat-number">24–29 nt</span><span class="banner-stat-label">piRNA signature range</span></div>
+      <div class="banner-stat"><span class="banner-stat-number">20×</span><span class="banner-stat-label">Viral enrichment<br>vs. long RNAs</span></div>
+    </div>
+  </section>
+
+  <!-- Diamond Tools -->
+  <section class="diamond-section" id="tools">
+    <div class="container fade-in">
+      <span class="section-label">Companion Tools</span>
+      <h2 class="section-title">Processing BLAST and Diamond results for viral metagenomics</h2>
+      <div class="diamond-grid">
+        <div class="diamond-info">
+          <p>Beyond the core small RNA Metavir pipeline, this companion repository provides <strong>scripts and workflows for processing tabular BLASTn and DIAMOND results</strong> — a critical step in any viral metagenomics analysis.</p>
+          <p>It covers the full workflow from downloading and formatting NCBI databases with taxonomy information, to filtering hits, enriching FASTA headers with alignment metadata, and adding complete taxonomic lineages to results.</p>
+          <div class="diamond-steps">
+            <div class="diamond-step"><div class="diamond-step-num">1</div><div><div class="diamond-step-title">Download & format databases</div><div class="diamond-step-desc">NCBI nr/refseq_protein with taxonomy nodes, names, and accession-to-taxid mappings</div></div></div>
+            <div class="diamond-step"><div class="diamond-step-num">2</div><div><div class="diamond-step-title">Build DIAMOND index</div><div class="diamond-step-desc">Create taxonomy-aware Diamond database for fast protein-level searches</div></div></div>
+            <div class="diamond-step"><div class="diamond-step-num">3</div><div><div class="diamond-step-title">Run BLASTx with rich output</div><div class="diamond-step-desc">Generate tabular results with coverage, identity, e-values, strand info, and taxonomy IDs</div></div></div>
+            <div class="diamond-step"><div class="diamond-step-num">4</div><div><div class="diamond-step-title">Filter & annotate</div><div class="diamond-step-desc">Add taxonomic ranks and alignment metadata to headers for downstream analysis</div></div></div>
+          </div>
+          <div class="diamond-link-box">
+            <div class="diamond-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></div>
+            <div class="diamond-link-text">
+              <div class="diamond-link-title">Metagenomics_dealing_with_blastn_diamond_results</div>
+              <div class="diamond-link-sub">Shell + Python scripts by João Paulo Almeida</div>
+            </div>
+            <a href="https://github.com/JPbio/Metagenomics_dealing_with_blastn_diamond_results" target="_blank" class="diamond-link-btn">View <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <div class="diamond-code">
+            <span class="diamond-code-label">Example: DIAMOND blastx with taxonomy</span>
+            <pre><span class="comment"># Build taxonomy-aware database</span>
+<span class="cmd">diamond makedb</span> \
+  <span class="flag">--in</span> refseq_protein.fasta \
+  <span class="flag">-d</span> refseq_protein_tax \
+  <span class="flag">--taxonnodes</span> nodes.dmp \
+  <span class="flag">--taxonnames</span> names.dmp \
+  <span class="flag">--taxonmap</span> prot.accession2taxid.FULL \
+  <span class="flag">--threads</span> 80
+
+<span class="comment"># Run sensitive search with rich output</span>
+<span class="cmd">diamond blastx</span> \
+  <span class="flag">-q</span> contigs.fasta \
+  <span class="flag">-d</span> nr_tax.dmnd \
+  <span class="flag">-k</span> 10 <span class="flag">-p</span> 31 <span class="flag">-e</span> 0.001 \
+  <span class="flag">-f</span> 6 qseqid qlen qstart qend \
+     qcovhsp length sseqid slen \
+     sstart send scovhsp pident \
+     evalue bitscore qstrand \
+     qframe stitle staxids \
+  <span class="flag">--very-sensitive</span> \
+  <span class="flag">-o</span> hits_out.tab \
+  <span class="flag">--al</span> aligned.fasta \
+  <span class="flag">--un</span> unaligned.fasta</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Publications -->
+  <section class="publications" id="publications">
+    <div class="container fade-in">
+      <span class="section-label">Publications</span>
+      <h2 class="section-title">Selected research from João Paulo P. de Almeida</h2>
+      <div class="pub-carousel-wrapper">
+        <div class="pub-carousel" id="pubCarousel">
+          <div class="pub-card">
+            <div class="pub-journal">Nature Microbiology · 2023</div>
+            <div class="pub-title">Mosquito vector competence for dengue is modulated by insect-specific viruses</div>
+            <div class="pub-authors">Olmo RP, Todjro YMH, Aguiar ERGR, <span class="highlight">de Almeida JPP</span>, Ferreira FV, Armache JN, <em>et al.</em></div>
+            <a href="https://doi.org/10.1038/s41564-022-01289-4" target="_blank" class="pub-link">Read paper <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+          <div class="pub-card">
+            <div class="pub-journal">Current Opinion in Virology · 2021</div>
+            <div class="pub-title">The virome of vector mosquitoes</div>
+            <div class="pub-authors"><span class="highlight">de Almeida JPP</span>, Aguiar ERGR, Armache JN, Olmo RP, Marques JT</div>
+            <a href="https://doi.org/10.1016/j.coviro.2021.04.002" target="_blank" class="pub-link">Read paper <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+          <div class="pub-card">
+            <div class="pub-journal">Virus Evolution · 2023</div>
+            <div class="pub-title">The virome of the invasive Asian bush mosquito Aedes japonicus in Europe</div>
+            <div class="pub-authors">Abbo SR, <span class="highlight">De Almeida JPP</span>, Olmo RP, Balvers C, Griep JS, Linthout C, <em>et al.</em></div>
+            <a href="https://doi.org/10.1093/ve/vead041" target="_blank" class="pub-link">Read paper <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+          <div class="pub-card">
+            <div class="pub-journal">Nucleic Acids Research · 2015</div>
+            <div class="pub-title">Sequence-independent characterization of viruses based on the pattern of viral small RNAs produced by the host</div>
+            <div class="pub-authors">Aguiar ERGR, Olmo RP, Paro S, Ferreira FV, de Faria IJS, Todjro YMH, <em>et al.</em></div>
+            <a href="https://doi.org/10.1093/nar/gkv587" target="_blank" class="pub-link">Read paper <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+          <div class="pub-card">
+            <div class="pub-journal">Presentation · CI-IA Saúde UFMG · 2023</div>
+            <div class="pub-title">small RNA Metavir: a machine learning-based tool for virus identification in complex samples</div>
+            <div class="pub-authors">Costa HNA, <span class="highlight">De Almeida JPP</span>, Silva BM, Ferreira PRF, Correa UB, Teixeira MM, Aguiar ERGR, Marques JT</div>
+            <a href="https://github.com/rnai-bioinfo/small-rna-metavir" target="_blank" class="pub-link">View tool <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></a>
+          </div>
+        </div>
+        <div class="carousel-nav">
+          <button class="carousel-btn" onclick="scrollCarousel(-1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="carousel-btn" onclick="scrollCarousel(1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GitHub CTA -->
+  <section class="github-cta" id="github">
+    <h2>Open source. Open science.</h2>
+    <p>small RNA Metavir is freely available for the research community. Clone, contribute, or adapt the pipeline for your own virome studies.</p>
+    <a href="https://github.com/rnai-bioinfo/small-rna-metavir" target="_blank" class="cta-button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      Explore on GitHub
+    </a>
+    <div class="cta-meta">
+      <span>Python + Perl + Jupyter</span><span>Docker-ready</span><span>152 commits</span><span>MIT-compatible</span>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact" id="contact">
+    <div class="container fade-in">
+      <span class="section-label">Collaborate</span>
+      <h2 class="section-title">Get in touch</h2>
+      <p class="contact-intro">Interested in applying small RNA metagenomics to your virome studies? We welcome collaborations with research groups working on vector-borne diseases, insect biology, or viral ecology.</p>
+      <div class="contact-links-grid">
+        <a href="mailto:placeholder@email.com" class="contact-link">
+          <div class="contact-link-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div><div class="contact-link-label">Email</div><div class="contact-link-value">placeholder@email.com</div></div>
+        </a>
+        <a href="https://twitter.com/placeholder" target="_blank" class="contact-link">
+          <div class="contact-link-icon" style="background: #1DA1F2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+          <div><div class="contact-link-label">X / Twitter</div><div class="contact-link-value">@placeholder</div></div>
+        </a>
+        <a href="https://www.researchgate.net/profile/Joao-Paulo-De-Almeida" target="_blank" class="contact-link">
+          <div class="contact-link-icon" style="background: #00CCBB;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.586 0c-.818 0-1.508.19-2.073.565-.563.377-.97.936-1.213 1.68a3.193 3.193 0 0 0-.112.437 8.365 8.365 0 0 0-.078.53 9 9 0 0 0-.032.57c-.01.2-.014.392-.014.57v6.97H8.063V4.686a1.69 1.69 0 0 0-.525-1.312c-.378-.323-.876-.483-1.504-.483-.628 0-1.126.16-1.504.483A1.69 1.69 0 0 0 4.004 4.7v14.6c0 .563.175 1.015.525 1.356.35.342.848.514 1.504.514.656 0 1.154-.172 1.504-.514.35-.34.525-.793.525-1.356v-5.472h8.001v5.472c0 .563.175 1.015.525 1.356.35.342.848.514 1.504.514.656 0 1.154-.172 1.504-.514.35-.34.525-.793.525-1.356V4.7c0-.178-.005-.362-.014-.553a6.902 6.902 0 0 0-.035-.522 7.808 7.808 0 0 0-.08-.49 2.85 2.85 0 0 0-.114-.42c-.254-.72-.668-1.263-1.24-1.632C21.094.19 20.404 0 19.586 0z"/></svg></div>
+          <div><div class="contact-link-label">ResearchGate</div><div class="contact-link-value">João Paulo P. de Almeida</div></div>
+        </a>
+        <a href="https://www.linkedin.com/in/jo%C3%A3o-paulo-p-de-almeida-16ab7a205/" target="_blank" class="contact-link">
+          <div class="contact-link-icon" style="background: #0A66C2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></div>
+          <div><div class="contact-link-label">LinkedIn</div><div class="contact-link-value">João Paulo P. de Almeida</div></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">small-rna-metavir</div>
+    <p>Sequence-independent viral discovery through small RNA metagenomics</p>
+    <div class="footer-links">
+      <a href="https://github.com/rnai-bioinfo/small-rna-metavir" target="_blank">GitHub</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <p style="margin-top: 1.5rem; font-size: 0.75rem; opacity: 0.5;">Developed at João T. Marques's Lab · UFMG & CNRS-IBMC Strasbourg</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    function scrollCarousel(direction) { const c = document.getElementById('pubCarousel'); c.scrollBy({ left: direction * (c.querySelector('.pub-card').offsetWidth + 24), behavior: 'smooth' }); }
+    document.querySelectorAll('a[href^="#"]').forEach(a => { a.addEventListener('click', function(e) { e.preventDefault(); const t = document.querySelector(this.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth' }); }); });
+    window.addEventListener('scroll', () => { document.querySelector('nav').style.boxShadow = window.scrollY > 50 ? '0 1px 10px rgba(0,0,0,0.06)' : 'none'; });
+  </script>
+</body>
+</html>
